@@ -9,7 +9,11 @@
 #include <sstream>
 
 #pragma warning(disable: 4996)
-
+/*
+Класс работы с сетью имеет 2 очереди.
+in_queue - входящая очередь
+out_queue - исходящая очередь
+*/
 class NetWork{
 public:
 	SOCKET Connection;
@@ -35,11 +39,11 @@ public:
 			run();
 		}
 	}
-	void add_in_queue(std::string &head, std::string &command) {
+	void add_out_queue(std::string &head, std::string &command) {
 		std::vector<std::string> timed;
 		timed.push_back(head);
 		timed.push_back(command);
-		in_queue.push_back(timed);
+		out_queue.push_back(timed);
 	}
 	void preload() {
 		if (WSAStartup(DLLVersion, &wsaData) != 0) {
@@ -84,13 +88,13 @@ public:
 			if (!con_suspent) {
 				return;
 			}
-			size_vector = in_queue.size();
+			size_vector = out_queue.size();
 			if (size_vector >= 1) {
-				msg = hash + " $R!H " +in_queue[0][0] + " $R!E " + in_queue[0][1];
+				msg = hash + " $R!H " + out_queue[0][0] + " $R!E " + out_queue[0][1];
 				char chars[1024];
 				msg.copy(chars, msg.length() + 1);
 				recv(Connection, chars, sizeof(chars), NULL);
-				in_queue.erase(in_queue.begin());
+				out_queue.erase(out_queue.begin());
 			}
 			/*
 			char* pch = strtok(msg, "$R!H");			
@@ -105,11 +109,22 @@ public:
 		}
 	}
 	void Send() {
-		char msg1[256];
+		std::string msg;
+		int size_vector = 0;
 		while (true) {
-			send(Connection, msg1, sizeof(msg1), NULL);
-			Sleep(10);
+			if (!con_suspent) {
+				return;
+			}
+			size_vector = out_queue.size();
+			if (size_vector >= 1) {
+				msg = hash + " $R!H " + out_queue[0][0] + " $R!E " + out_queue[0][1];
+				char chars[1023];
+				msg.copy(chars, 1024);
+				send(Connection, chars, sizeof(chars), NULL);
+				out_queue.erase(out_queue.begin());
+			}
 		}
+		
 	}
 	void Ping() {
 	}
