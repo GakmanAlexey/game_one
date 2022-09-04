@@ -39,7 +39,23 @@ public:
 			run();
 		}
 	}
-	void add_out_queue(std::string &head, std::string &command) {
+	/*
+	* Очередь входящих команж
+	Принимает 2 строки, заголовок команды и саму команду
+	Добавляет в очередь in_queue
+	*/
+	void add_in_queue(std::string &head, std::string &command) {
+		std::vector<std::string> timed;
+		timed.push_back(head);
+		timed.push_back(command);
+		in_queue.push_back(timed);
+	}
+	/*
+	* Очередь Исходящий команд
+	Принимает 2 строки, заголовок команды и саму команду
+	Добавляет в очередь out_queue
+	*/
+	void add_out_queue(std::string& head, std::string& command) {
 		std::vector<std::string> timed;
 		timed.push_back(head);
 		timed.push_back(command);
@@ -82,20 +98,13 @@ public:
 		}
 	}
 	void Handler(void) {
-		std::string msg;
-		int size_vector = 0;
+		char chars[1024];
 		while (true) {
 			if (!con_suspent) {
 				return;
 			}
-			size_vector = out_queue.size();
-			if (size_vector >= 1) {
-				msg = hash + " $R!H " + out_queue[0][0] + " $R!E " + out_queue[0][1];
-				char chars[1024];
-				msg.copy(chars, msg.length() + 1);
-				recv(Connection, chars, sizeof(chars), NULL);
-				out_queue.erase(out_queue.begin());
-			}
+			recv(Connection, chars, sizeof(chars), NULL);
+		}
 			/*
 			char* pch = strtok(msg, "$R!H");			
 			int i = 0;
@@ -106,7 +115,6 @@ public:
 				i++;
 			}
 			*/
-		}
 	}
 	void Send() {
 		std::string msg;
